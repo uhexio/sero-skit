@@ -51,7 +51,7 @@ class Load extends React.Component<State, any>{
 
     componentDidMount(): void {
 
-        this.getAccounts();
+        this.getAccounts().catch();
         this.getContract();
     }
 
@@ -59,7 +59,6 @@ class Load extends React.Component<State, any>{
         const that = this;
         // @ts-ignore
         const address = this.props.match.params.address;
-        console.log("address>>",address);
         dao.detail(address).then((rest:any)=>{
             console.log(rest);
             const abiObj = JSON.parse(rest.abi);
@@ -159,13 +158,21 @@ class Load extends React.Component<State, any>{
         return aHtml
     }
 
+    convertValue(value:any,inputType:any):any{
+        if(inputType && inputType.indexOf("[]")>-1){
+            value = JSON.parse(value)
+        }
+        return value
+    }
+
     query(method:string){
         const {contractService,paramValue,contractMap,queryValue,selectAccount} = this.state;
         if(contractService){
             const inputs:Array<Param> = contractMap.get(method).inputs;
             let args:Array<any> = [];
             for(let item of inputs){
-                args.push(paramValue.get(this.paramKey(method,item.name)))
+                const value = paramValue.get(this.paramKey(method,item.name));
+                args.push(this.convertValue(value,item.type))
             }
             contractService.callMethod(method,selectAccount.MainPKr,args).then(rest=>{
                 console.log("query rest>>>",rest, JSON.stringify(rest));
@@ -179,14 +186,14 @@ class Load extends React.Component<State, any>{
         }
     }
 
-    convertOutputs(outputs:Array<any>,result:Array<any>){
-        const rest:any = {};
-        for(let item of outputs){
-            if(typeof item === "string"){
-
-            }
-        }
-    }
+    // convertOutputs(method:string,outputs:Array<any>,outputType:any){
+    //     const rest:any = {};
+    //     for(let item of outputs){
+    //         if(typeof item === "string"){
+    //
+    //         }
+    //     }
+    // }
 
     execute(method:string){
         const {contractService,paramValue,contractMap,queryValue,selectAccount,selectCurrency} = this.state;
@@ -194,7 +201,8 @@ class Load extends React.Component<State, any>{
             const inputs:Array<Param> = contractMap.get(method).inputs;
             let args:Array<any> = [];
             for(let item of inputs){
-                args.push(paramValue.get(this.paramKey(method,item.name)))
+                const value = paramValue.get(this.paramKey(method,item.name));
+                args.push(this.convertValue(value,item.type))
             }
             let value:BigNumber = new BigNumber(0)
             const key = this.paramKey(method,"payable");
