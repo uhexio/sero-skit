@@ -86,6 +86,26 @@ class Load extends React.Component<State, any>{
         return method + ":" + name;
     }
 
+    convertResult(result: any) {
+        const resultArray: any = [];
+        result.forEach(function (res: any, i: any) {
+            if (isFinite(i))
+                resultArray.push(res);
+        });
+        const convert = function (resultArray: any) {
+            return resultArray.map(function (res: any) {
+                if (res.constructor.name === 'BN') {
+                    res = res.toString(10);
+                } else if (res instanceof Array) {
+                    res = convert(res);
+                }
+                return res;
+            });
+        };
+        return convert(resultArray);
+    }
+
+
     renderContract(){
         const {contract,queryValue,paramValue} = this.state;
         const aHtml:Array<any> = [];
@@ -128,29 +148,27 @@ class Load extends React.Component<State, any>{
                     }
 
                 }
-                //query
-                if(data.constant){
-                    aHtml.push(params)
-                    aHtml.push(<IonText color="success">{queryValue.get(method)}</IonText>)
-                    aHtml.push(
-                        <div style={{float:"right"}}><IonButton onClick={()=>{this.query(method)}} size={"small"}>View</IonButton></div>
+                if(data.stateMutability.indexOf("payable")>-1){
+                    const arg:any = "payable";
+                    const key = this.paramKey(method,arg);
+                    const value:any = paramValue.has(key)?paramValue.get(key):""
+                    params.push(
+                        <IonItem>
+                            <IonLabel>Payable</IonLabel>
+                            <IonInput value={value} placeholder={"uint256"} onIonChange={e => this.setValue(method,arg,e.detail.value!)}/>
+                        </IonItem>
                     )
-                }else{
-                    if(data.payable){
-                        const arg:any = "payable";
-                        const key = this.paramKey(method,arg);
-                        const value:any = paramValue.has(key)?paramValue.get(key):""
-                        params.push(
-                            <IonItem>
-                                <IonLabel>Payable</IonLabel>
-                                <IonInput value={value} placeholder={"uint256"} onIonChange={e => this.setValue(method,arg,e.detail.value!)}/>
-                            </IonItem>
-                        )
-                    }
+
                     aHtml.push(params)
                     aHtml.push(<IonText color="tertiary">{queryValue.get(method)}</IonText>)
                     aHtml.push(
                         <div style={{float:"right"}}><IonButton onClick={()=>{this.execute(method)}} size={"small"}>Execute</IonButton></div>
+                    )
+                }else{
+                    aHtml.push(params)
+                    aHtml.push(<IonText color="success">{queryValue.get(method)}</IonText>)
+                    aHtml.push(
+                        <div style={{float:"right"}}><IonButton onClick={()=>{this.query(method)}} size={"small"}>View</IonButton></div>
                     )
                 }
             }

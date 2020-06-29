@@ -98,6 +98,7 @@ class Add extends React.Component<State, any>{
                 window.location.href = "#/";
             },2000)
         }).catch(e=>{
+            console.error(e);
             const err = typeof e === 'string'?e:e.message;
             that.toast(err);
         })
