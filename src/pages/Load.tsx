@@ -86,26 +86,6 @@ class Load extends React.Component<State, any>{
         return method + ":" + name;
     }
 
-    convertResult(result: any) {
-        const resultArray: any = [];
-        result.forEach(function (res: any, i: any) {
-            if (isFinite(i))
-                resultArray.push(res);
-        });
-        const convert = function (resultArray: any) {
-            return resultArray.map(function (res: any) {
-                if (res.constructor.name === 'BN') {
-                    res = res.toString(10);
-                } else if (res instanceof Array) {
-                    res = convert(res);
-                }
-                return res;
-            });
-        };
-        return convert(resultArray);
-    }
-
-
     renderContract(){
         const {contract,queryValue,paramValue} = this.state;
         const aHtml:Array<any> = [];
@@ -149,16 +129,17 @@ class Load extends React.Component<State, any>{
 
                 }
                 if(data.stateMutability.indexOf("payable")>-1){
-                    const arg:any = "payable";
-                    const key = this.paramKey(method,arg);
-                    const value:any = paramValue.has(key)?paramValue.get(key):""
-                    params.push(
-                        <IonItem>
-                            <IonLabel>Payable</IonLabel>
-                            <IonInput value={value} placeholder={"uint256"} onIonChange={e => this.setValue(method,arg,e.detail.value!)}/>
-                        </IonItem>
-                    )
-
+                    if(data.stateMutability === "payable"){
+                        const arg:any = "payable";
+                        const key = this.paramKey(method,arg);
+                        const value:any = paramValue.has(key)?paramValue.get(key):""
+                        params.push(
+                            <IonItem>
+                                <IonLabel>Payable</IonLabel>
+                                <IonInput value={value} placeholder={"uint256"} onIonChange={e => this.setValue(method,arg,e.detail.value!)}/>
+                            </IonItem>
+                        )
+                    }
                     aHtml.push(params)
                     aHtml.push(<IonText color="tertiary">{queryValue.get(method)}</IonText>)
                     aHtml.push(
@@ -166,7 +147,7 @@ class Load extends React.Component<State, any>{
                     )
                 }else{
                     aHtml.push(params)
-                    aHtml.push(<IonText color="success">{queryValue.get(method)}</IonText>)
+                    aHtml.push(<IonText color="tertiary">{queryValue.get(method)}</IonText>)
                     aHtml.push(
                         <div style={{float:"right"}}><IonButton onClick={()=>{this.query(method)}} size={"small"}>View</IonButton></div>
                     )
@@ -192,7 +173,7 @@ class Load extends React.Component<State, any>{
                 const value = paramValue.get(this.paramKey(method,item.name));
                 args.push(this.convertValue(value,item.type))
             }
-            contractService.callMethod(method,selectAccount.MainPKr,args).then(rest=>{
+            contractService.callMethod(method,selectAccount.MainPKr,args).then((rest:any)=>{
                 console.log("query rest>>>",rest, JSON.stringify(rest));
                 // const outputs = contractMap.get(method).outputs;
 
