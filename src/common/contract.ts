@@ -57,6 +57,7 @@ class Contract {
         return new Promise((resolve, reject) => {
             seropp.estimateGas(estimateParam, function (gas:any, error:any) {
                 if (error) {
+                    reject(error)
                 } else {
                     executeData["gas"] = gas;
                     seropp.executeContract(executeData, function (res:any, error:any) {

@@ -214,6 +214,11 @@ class Load extends React.Component<State, any>{
                 this.setState({
                     queryValue:queryValue
                 })
+            }).catch(e=>{
+                queryValue.set(method,typeof e === 'string'?e:e.message)
+                this.setState({
+                    queryValue:queryValue
+                })
             })
         }
     }
