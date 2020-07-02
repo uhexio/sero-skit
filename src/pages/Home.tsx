@@ -40,7 +40,6 @@ class Home extends React.Component<State, any>{
         const that = this;
         const rest:any = await dao.list();
         const list:Array<ContractModel> =[];
-        console.log("rest>>>",rest);
         for(let c of rest){
             const ct = c;
             if(c.address.length === 66){

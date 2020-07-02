@@ -157,5 +157,8 @@
     "presets": [
       "react-app"
     ]
+  },
+  "devDependencies": {
+    "bs58": "^4.0.1"
   }
 }

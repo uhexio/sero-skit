@@ -17,6 +17,7 @@ import utils from "../common/utils";
 import BigNumber from "bignumber.js";
 import dao from "../common/db/Dao";
 
+
 interface Param {
     name:string
     type:string
@@ -36,7 +37,7 @@ interface State {
     showToast:boolean
     value:any
     payable:boolean
-    toastMsg:string
+    toastMsg:any
 }
 
 class Deploy extends React.Component<State, any>{
@@ -55,7 +56,7 @@ class Deploy extends React.Component<State, any>{
     }
 
     componentDidMount(): void {
-        this.getAccounts()
+        this.getAccounts().catch();
     }
 
     setName = (value:string)=>{
@@ -108,7 +109,7 @@ class Deploy extends React.Component<State, any>{
                 inputHtml.push(
                     <IonItem>
                         <IonLabel>{data.name}</IonLabel>
-                        {data.type.indexOf("uint")>-1?<IonInput value={inputsMap.get(data.name)} type={"number"} placeholder={data.type} onIonChange={e => this.setInputs(data.name,parseInt(e.detail.value!,10))}/>:<IonInput value={inputsMap.get(data.name)} placeholder={data.type} onIonChange={e => this.setInputs(data.name,e.detail.value!)}/> }
+                        <IonInput value={inputsMap.get(data.name)} placeholder={data.type} onIonChange={e => this.setInputs(data.name,e.detail.value!)}/>
                     </IonItem>
                 )
             }
@@ -191,7 +192,7 @@ class Deploy extends React.Component<State, any>{
 
     }
 
-    confirm=()=>{
+    async confirm(){
         const that = this;
         const {data,abi,inputsMap,selectAccount,selectCurrency,value,name} = this.state;
         const abiObj:any = JSON.parse(abi);
@@ -202,7 +203,15 @@ class Deploy extends React.Component<State, any>{
             if(data.type === "constructor"){
                 const inputs:Array<Param> = data.inputs;
                 for(let input of inputs){
-                    conValue.push(inputsMap.get(input.name))
+                    let val:any = inputsMap.get(input.name);
+                    if(input.type ==="address"){
+                        val = await utils.convertAddress(val);
+                    }else if(input.type ==="address[]"){
+                        val = await utils.convertAddresses(JSON.parse(val));
+                    }else if(input.type.indexOf("[]")>-1){
+                        val = JSON.parse(val);
+                    }
+                    conValue.push(val)
                 }
             }
         }
@@ -302,12 +311,12 @@ class Deploy extends React.Component<State, any>{
                             <IonLabel>Data</IonLabel>
                         </IonItemDivider>
                         <IonItem lines={"none"}>
-                            <IonTextarea rows={3} value={data} placeholder="Contract Address" onIonChange={e => this.setData(e.detail.value!)}/>
+                            <IonTextarea rows={3} value={data} placeholder="data" onIonChange={e => this.setData(e.detail.value!)}/>
                         </IonItem>
                     </IonList>
                 </IonContent>
                 <div style={{width:"100%",position:"fixed",bottom:0}}>
-                    <IonButton onClick={()=>{this.confirm()}} expand={"block"}>{i18n.t('Next')}</IonButton>
+                    <IonButton onClick={()=>{this.confirm().then().catch()}} expand={"block"}>{i18n.t('Next')}</IonButton>
                 </div>
 
                 <IonToast
