@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
 import service from "./service";
 const bs58 = require('bs58');
+const stringifyObject = require('stringify-object');
 
 export default {
 
@@ -33,6 +34,38 @@ export default {
         }
         return new BigNumber(v).toString(10)
     },
+
+    async convertShotAddress(shotAddress:Array<string>){
+        const rest:any = await service.jsonRpc("sero_getFullAddress",[shotAddress]);
+        const resultArr:Array<string> = [];
+        for(let addr of shotAddress){
+            resultArr.push(rest[addr])
+        }
+        return resultArr.join(",");
+    },
+
+    convertResult(result: any) {
+        if (result instanceof Array) {
+            const resultArray: any = [];
+            result.forEach(function (res: any, i: any) {
+                if (isFinite(i))
+                    resultArray.push(res);
+            });
+            const convert = function (resultArray: any) {
+                return resultArray.map(function (res: any) {
+                    if (res.constructor.name === 'BN') {
+                        res = res.toString(10);
+                    } else if (res instanceof Array) {
+                        res = convert(res);
+                    }
+                    return res;
+                });
+            };
+            return convert(resultArray);
+        }
+        return result
+    }
+    ,
 
     async convertAddress(address:string){
         const rest:any = await service.jsonRpc("sero_getCode",[address,"latest"]);
@@ -87,6 +120,18 @@ export default {
             return false;
         }
         return true;
+    },
+
+    formatJson(json:any) {
+        if (typeof json !== 'string') {
+            json = JSON.stringify(json);
+        }
+        const pretty = stringifyObject(json, {
+            indent: '  ',
+            singleQuotes: false,
+            inlineCharacterLimit: 12
+        });
+        return pretty;
     }
 }
 

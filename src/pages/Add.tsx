@@ -5,8 +5,6 @@ import {
     IonLabel,
     IonList,
     IonItem,
-    IonText,
-    IonInput,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -148,6 +146,7 @@ class Add extends React.Component<State, any>{
                 <IonToast
                     isOpen={showToast}
                     onDidDismiss={this.hideToast}
+                    //@ts-ignore
                     message={toastMsg}
                     duration={2000}
                     color={"dark"}

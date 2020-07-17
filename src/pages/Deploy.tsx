@@ -321,7 +321,8 @@ class Deploy extends React.Component<State, any>{
 
                 <IonToast
                     isOpen={showToast}
-                    onDidDismiss={this.hideToast}
+                    onDidDismiss={()=>this.hideToast()}
+                    //@ts-ignore
                     message={toastMsg}
                     duration={2000}
                     color={"dark"}

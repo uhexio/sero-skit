@@ -1,6 +1,7 @@
 import BigNumber from "bignumber.js";
 // @ts-ignore
 import seropp from 'sero-pp'
+import service from "./service";
 const serojs = require("serojs");
 
 class Contract {
@@ -19,6 +20,8 @@ class Contract {
             to: this.contract.address,
             data: packData
         };
+
+
         return new Promise((resolve, reject) => {
             seropp.call(callParams, function (callData:any,err:any) {
                 if(err){

@@ -20,6 +20,7 @@ import BigNumber from "bignumber.js";
 
 
 interface Param {
+    components:Array<any>
     name:string
     type:string
 }
@@ -141,15 +142,15 @@ class Load extends React.Component<State, any>{
                         )
                     }
                     aHtml.push(params)
-                    aHtml.push(<IonText color="tertiary">{queryValue.get(method)}</IonText>)
+                    aHtml.push(<div color="tertiary">{queryValue.get(method)}</div>)
                     aHtml.push(
                         <div style={{float:"right"}}><IonButton onClick={()=>{this.execute(method)}} size={"small"}>Execute</IonButton></div>
                     )
                 }else{
                     aHtml.push(params)
-                    aHtml.push(<IonText color="tertiary">{queryValue.get(method)}</IonText>)
+                    aHtml.push(<div color="tertiary">{queryValue.get(method)}</div>)
                     aHtml.push(
-                        <div style={{float:"right"}}><IonButton onClick={()=>{this.query(method)}} size={"small"}>View</IonButton></div>
+                        <div style={{float:"right"}}><IonButton onClick={()=>{this.query(method).catch()}} size={"small"}>View</IonButton></div>
                     )
                 }
             }
@@ -164,8 +165,8 @@ class Load extends React.Component<State, any>{
         return value
     }
 
-    query(method:string){
-        const {contractService,paramValue,contractMap,queryValue,selectAccount} = this.state;
+    async query(method:string){
+        const {contractService,paramValue,contractMap,queryValue,selectAccount,contract} = this.state;
         if(contractService){
             const inputs:Array<Param> = contractMap.get(method).inputs;
             let args:Array<any> = [];
@@ -173,26 +174,54 @@ class Load extends React.Component<State, any>{
                 const value = paramValue.get(this.paramKey(method,item.name));
                 args.push(this.convertValue(value,item.type))
             }
-            contractService.callMethod(method,selectAccount.MainPKr,args).then((rest:any)=>{
-                console.log("query rest>>>",rest, JSON.stringify(rest));
-                // const outputs = contractMap.get(method).outputs;
-
-                queryValue.set(method,JSON.stringify(rest))
+            if(method === 'skitCustomerBalanceOf' && contract){
+                const rest:any = await service.jsonRpc("sero_getBalance",[await utils.convertAddress(contract.address),"latest"])
+                const tkn:any = rest.tkn;
+                const keys = Object.keys(tkn);
+                const result:any = {};
+                for(let cy of keys){
+                    const decimal = await service.getDecimal(cy);
+                    result[cy] = utils.fromValue(tkn[cy],decimal);
+                }
+                queryValue.set(method,JSON.stringify(result))
                 this.setState({
                     queryValue:queryValue
                 })
-            })
+            }else{
+                const rest:any = await contractService.callMethod(method,selectAccount.MainPKr,args);
+                // console.log("query rest>>>",rest, JSON.stringify(rest));
+                const outputs = contractMap.get(method).outputs;
+                const result = await this.convertOutputs(outputs,utils.convertResult(rest[0]))
+                console.log(result);
+                queryValue.set(method,utils.formatJson(result))
+                this.setState({
+                    queryValue:queryValue
+                })
+            }
         }
     }
 
-    // convertOutputs(method:string,outputs:Array<any>,outputType:any){
-    //     const rest:any = {};
-    //     for(let item of outputs){
-    //         if(typeof item === "string"){
-    //
-    //         }
-    //     }
-    // }
+    async convertOutputs(outputs:Array<Param>,rest:any){
+        console.log("convertOutputs",outputs,rest)
+        // if(!(rest instanceof Array)){
+        //     return rest;
+        // }
+        if(outputs[0]["components"]){
+            outputs = outputs[0]["components"];
+        }
+        const retn:any={};
+        for(let i=0;i<outputs.length;i++){
+            const item:Param = outputs[i];
+            if(item.type === "address"){
+                retn[item.name] = await utils.convertShotAddress([rest instanceof Array?rest[i]:rest]);
+            }else if(item.type === "address[]"){
+                retn[item.name]= await utils.convertShotAddress(rest);
+            }else{
+                retn[item.name]= rest;
+            }
+        }
+        return retn
+    }
 
     execute(method:string){
         const {contractService,paramValue,contractMap,queryValue,selectAccount,selectCurrency} = this.state;
