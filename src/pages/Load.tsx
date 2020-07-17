@@ -202,10 +202,6 @@ class Load extends React.Component<State, any>{
     }
 
     async convertOutputs(outputs:Array<Param>,rest:any){
-        console.log("convertOutputs",outputs,rest)
-        // if(!(rest instanceof Array)){
-        //     return rest;
-        // }
         if(outputs[0]["components"]){
             outputs = outputs[0]["components"];
         }
@@ -217,7 +213,7 @@ class Load extends React.Component<State, any>{
             }else if(item.type === "address[]"){
                 retn[item.name]= await utils.convertShotAddress(rest);
             }else{
-                retn[item.name]= rest;
+                retn[item.name]= rest[i];
             }
         }
         return retn
