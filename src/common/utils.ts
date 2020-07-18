@@ -128,7 +128,7 @@ export default {
         }
         const pretty = stringifyObject(json, {
             indent: '  ',
-            singleQuotes: false,
+            singleQuotes: true,
             inlineCharacterLimit: 12
         });
         return pretty;

@@ -74,7 +74,7 @@ class Service {
                 contractAddress: "Doraemon",
                 github: "https://github.com/uhexio/sero-skit",
                 author: "uhexio",
-                url: window.location.href,
+                url: window.location.origin+window.location.pathname,
                 logo: window.location.origin+window.location.pathname +"assets/icon/icon.png",
             }
 
