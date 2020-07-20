@@ -124,13 +124,14 @@ export default {
 
     formatJson(json:any) {
         if (typeof json !== 'string') {
-            json = JSON.stringify(json);
+            // json = JSON.stringify(json);
         }
         const pretty = stringifyObject(json, {
-            indent: '  ',
-            singleQuotes: true,
-            inlineCharacterLimit: 12
+            indent: '    ',
+            singleQuotes: false,
+            // inlineCharacterLimit: 12
         });
+        console.log("pretty",pretty);
         return pretty;
     }
 }

@@ -142,13 +142,13 @@ class Load extends React.Component<State, any>{
                         )
                     }
                     aHtml.push(params)
-                    aHtml.push(<div color="tertiary">{queryValue.get(method)}</div>)
+                    aHtml.push(<div color="tertiary"><pre>{queryValue.get(method)}</pre></div>)
                     aHtml.push(
                         <div style={{float:"right"}}><IonButton onClick={()=>{this.execute(method)}} size={"small"}>Execute</IonButton></div>
                     )
                 }else{
                     aHtml.push(params)
-                    aHtml.push(<div color="tertiary">{queryValue.get(method)}</div>)
+                    aHtml.push(<div color="tertiary"><pre>{queryValue.get(method)}</pre></div>)
                     aHtml.push(
                         <div style={{float:"right"}}><IonButton onClick={()=>{this.query(method).catch()}} size={"small"}>View</IonButton></div>
                     )
