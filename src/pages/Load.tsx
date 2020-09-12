@@ -189,11 +189,11 @@ class Load extends React.Component<State, any>{
                 })
             }else{
                 const rest:any = await contractService.callMethod(method,selectAccount.MainPKr,args);
-                // console.log("query rest>>>",rest, JSON.stringify(rest));
-                const outputs = contractMap.get(method).outputs;
-                const result = await this.convertOutputs(outputs,utils.convertResult(rest[0]))
-                console.log(result);
-                queryValue.set(method,utils.formatJson(result))
+                console.log("query rest>>>",rest, typeof rest, JSON.stringify(rest));
+                // const outputs = contractMap.get(method).outputs;
+                // const result = await this.convertOutputs(outputs,typeof rest === 'object'?rest[0]:rest)
+                // console.log(result);
+                queryValue.set(method,utils.formatJson(rest))
                 this.setState({
                     queryValue:queryValue
                 })
@@ -206,15 +206,16 @@ class Load extends React.Component<State, any>{
             outputs = outputs[0]["components"];
         }
         const retn:any={};
+        console.log("rest instanceof Array",rest instanceof Array,rest)
         for(let i=0;i<outputs.length;i++){
             const item:Param = outputs[i];
             console.log("convert",rest,item);
             if(item.type === "address"){
-                retn[item.name] = await utils.convertShotAddress([rest instanceof Array?rest[i]:[rest]]);
+                retn[item.name] = await utils.convertShotAddress([rest instanceof Array?rest[i]:rest]);
             }else if(item.type === "address[]"){
                 retn[item.name]= await utils.convertShotAddress([rest]);
             }else{
-                retn[item.name]= rest;
+                retn[item.name]= rest[i];
             }
         }
         return retn
