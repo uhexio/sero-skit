@@ -208,12 +208,13 @@ class Load extends React.Component<State, any>{
         const retn:any={};
         for(let i=0;i<outputs.length;i++){
             const item:Param = outputs[i];
+            console.log("convert",rest,item);
             if(item.type === "address"){
-                retn[item.name] = await utils.convertShotAddress([rest instanceof Array?rest[i]:rest]);
+                retn[item.name] = await utils.convertShotAddress([rest instanceof Array?rest[i]:[rest]]);
             }else if(item.type === "address[]"){
-                retn[item.name]= await utils.convertShotAddress(rest);
+                retn[item.name]= await utils.convertShotAddress([rest]);
             }else{
-                retn[item.name]= rest[i];
+                retn[item.name]= rest;
             }
         }
         return retn
