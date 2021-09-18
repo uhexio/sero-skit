@@ -36,6 +36,7 @@ interface State {
     balance?:string
     selectAccount:any
     selectCurrency:string
+    customerMainPKr:string
 }
 
 
@@ -46,8 +47,8 @@ class Load extends React.Component<State, any>{
         queryValue:new Map<string,any>(),
         contractMap:new Map(),
         selectAccount:{},
-        selectCurrency:''
-
+        selectCurrency:'',
+        customerMainPKr:""
     }
 
     componentDidMount(): void {
@@ -166,7 +167,7 @@ class Load extends React.Component<State, any>{
     }
 
     async query(method:string){
-        const {contractService,paramValue,contractMap,queryValue,selectAccount,contract} = this.state;
+        const {contractService,paramValue,contractMap,queryValue,selectAccount,contract,customerMainPKr} = this.state;
         if(contractService){
             const inputs:Array<Param> = contractMap.get(method).inputs;
             let args:Array<any> = [];
@@ -188,7 +189,8 @@ class Load extends React.Component<State, any>{
                     queryValue:queryValue
                 })
             }else{
-                const rest:any = await contractService.callMethod(method,selectAccount.MainPKr,args);
+                const pkr = customerMainPKr?customerMainPKr:selectAccount.MainPKr
+                const rest:any = await contractService.callMethod(method,pkr,args);
                 console.log("query rest>>>",rest, typeof rest, JSON.stringify(rest));
                 // const outputs = contractMap.get(method).outputs;
                 // const result = await this.convertOutputs(outputs,typeof rest === 'object'?rest[0]:rest)
@@ -363,6 +365,13 @@ class Load extends React.Component<State, any>{
                             <IonText>
                                 {balance}
                             </IonText>
+                        </IonItem>
+
+                        <IonItem>
+                            <IonLabel position="stacked">MainPKr</IonLabel>
+                            <IonInput onIonChange={(e)=>{
+                                this.setState({customerMainPKr:e.detail.value})
+                            }}/>
                         </IonItem>
 
                         {pHtml}
